@@ -3,8 +3,8 @@
 #+title:On Lisp by Paul Graham
 #+subtitle:{{{version}}} {{{date}}}
 #+author:LOLH
-#+date:2020-09-20 23:34
-#+macro:version Version 0.0.0
+#+date:2020-09-21 07:49
+#+macro:version Version 0.0.1
 #+macro:upload-date (eval (current-time-string))
 #+bucket:pinecone-forest.com
 
@@ -12,109 +12,350 @@
 
 #+texinfo:@insertcopying
 
+#+attr_texinfo: :author John Foderaro
+#+begin_quote
+Lisp is a programmable programming language.
+#+end_quote
+
 
 * Introduction
 :PROPERTIES:
 :unnumbered: t
 :END:
-** TODO Ideas on how to make this a better system
-*** TODO Install major dependencies
-[2020-02-14 Fri 10:12]
-- [ ] like ~aws2~
-- [ ] Org-mode > 9.1.9
+** Preface
+This book is intended for anyone who  wants to become a better Lisp programmer.
+The first  few chapters contain  a fair amount of  review. The ability  to bend
+Lisp to one’s will  is a large part of what distinguishes a  Lisp expert from a
+novice. As well as writing their programs down toward the language, experienced
+Lisp programmers build the language up toward their programs. This book teaches
+how to program in the bottom-up style for which Lisp is inherently well-suited.
+*** Bottom-Up Design
+Bottom-up design  is becoming more  important as software grows  in complexity.
+Programs today may have to meet  specifications which are extremely complex, or
+even  open-ended. Under  such  circumstances, the  traditional top-down  method
+sometimes breaks  down. In its place  there has evolved a  style of programming
+quite different from what is currently taught in most computer science courses:
+a bottom-up style in which a program is written as a series of layers, each one
+acting as  a sort  of programming  language for  the one  above. X  Windows and
+@@texinfo:@TeX{}@@ are examples of programs written in this style.
 
-*** TODO Get rid of hard-coded directories
-- [ ] ~create-script~
-  [2020-02-14 Fri 09:45]
+*** The Book's Theme
 
-  This script places itself inside a ~bin/~ directory so it can be found by
-  searching $PATH.  This can be accomplished by creating an environment
-  variable; I need to come up with a good domain name for this system first.
-  How about =SyncOrg=?	So the environment variable would be =SYNC_ORG_BIN=.  A
-  possible value would =~/Dev/bin= or =/usr/local/dev/bin=, depending on the
-  system.
+The theme of this book is twofold:
 
-*** TODO Add check for existence of environment variables
-[2020-02-14 Fri 09:57]
-- [ ] it appears environment variables do not expand inside header lines? Check
-  this.
-- [ ] if environment variables do not expand, then need to provide a script to
-  update them upon installation
-- [ ] such as =SYNC_ORG_BIN=
+- that Lisp is a natural language  for programs written in the bottom-up style,
+  and
+- that the bottom-up style is a natural way to write Lisp programs.
 
-*** DONE Update Date
 
-- State "DONE"	     from "TODO"       [2020-03-02 Mon 21:12]
-- State "TODO"	     from	       [2020-03-01 Sun 10:36] \\
-  When creating a new project from this template, update the #+date: to
-  the current day and time instead of leaving it to when this template
-  was last updated.
+On Lisp will thus be of interest to two classes of readers.
 
-*** TODO Make Update independent of the project
+1. For  people interested in writing  extensible programs, this book  will show
+   what you can do if you have the right language.
+2. For Lisp programmers, this book offers a practical explanation of how to use
+   Lisp to its best advantage.
 
-- State "TODO"	     from	       [2020-03-01 Sun 14:07] \\
-  I just tried to update a project, but the command AWS :=: aws2 did not
-  work because it has changed to aws version 2.	 If the update program
-  had been independent and based upon Template's most recent code, then
-  that would not have happened.	 Who knows what the next problem will be
-  causing the project's out-of-date code to fail to update.
-*** DONE Make adding git repo an option
-- State "DONE"	     from	       [2020-03-02 Mon 21:13]
-*** TODO Default macros
-    - State "TODO"       from              [2020-04-01 Wed 10:49] \\
-      Default macros do not get expanded or in some cases even recognized.
-      Is this a bug or am I doing something wrong.  User-defined macros
-      work.
-*** TODO Dependencies
-:LOGBOOK:
-- State "TODO"       from              [2020-06-09 Tue 23:36] \\
-  Provide function to collect all dependencies and list; or perhaps test
-:END:
-*** TODO Add link to main index.html file
-:LOGBOOK:
-- State "TODO"       from              [2020-06-17 Wed 12:30] \\
-  Want to create a link from project index.html files to the root
-  index.html files.
-:END:
-*** TODO Make sure exec-path has correct values before proceeding
-:LOGBOOK:
-- State "TODO"       from              [2020-09-09 Wed 12:54] \\
-  Make Sure exec-path has correct values
-:END:
-*** DONE Error on running initial 'make open-org'
-   - State "DONE"       from "TODO"       [2020-09-08 Tue 23:10]
-:LOGBOOK:
-- State "TODO"       from              [2020-09-03 Thu 09:30] \\
-  Fix error when running initial make from new project
 
-  A: Made sure the default bucket was named correctly.
-:END:
-#+begin_src sh
-> make open-org
+*** Why On Lisp
 
-  An error occurred (NoSuchBucket) when calling the ListObjectsV2 operation: The specified bucket does not exist
-#+end_src
-*** SOMEDAY Delete a whole project
-:LOGBOOK:
-- State "SOMEDAY"    from "TODO"       [2020-09-04 Fri 13:54] \\
-  Provide functionality to remove a project from the file system,
-  GitHub, and the AWS S3 bucket.
-:END:
-*** TODO Added Template Version when Updating
-:LOGBOOK:
-- State "TODO"       from              [2020-09-16 Wed 09:18] \\
-  Add a custom id to an org template file when it is updated with the
-  new template.
-:END:
-*** INPROGRESS Add a Missing Bucket on Update
-    - State "INPROGRESS" from [2020-09-18 Fri 08:24] \\
-      When updating, add a missing #+bucket: key by asking with a default of
-      pinecone-forest.
-*** TODO Check for Newer Version On Open Org
-    - State "TODO"       from              [2020-09-19 Sat 10:09] \\
-      When running the make command 'open-org', check for a newer version
-      stored on GitHub and issue a warning if there is one.
-* Chapter
+The title  is intended  to stress  the importance  of bottom-up  programming in
+Lisp. Instead  of just  writing your program  in Lisp, you  can write  your own
+language on Lisp, and write your program in that.
+
+It is  possible to write  programs bottom-up in any  language, but Lisp  is the
+most natural vehicle  for this style of programming. In  Lisp, bottom-up design
+is not a special technique reserved  for unusually large or difficult programs.
+Any substantial  program will be written  partly in this style.  Lisp was meant
+from the start  to be an extensible  language. The language itself  is mostly a
+collection of Lisp  functions, no different from the ones  you define yourself.
+What’s more,  Lisp functions  can be  expressed as lists,  which are  Lisp data
+structures. This means you can write Lisp functions which generate Lisp code.
+
+*** Why Macros
+
+A good Lisp programmer must know how to take advantage of this possibility. The
+usual way to do so is by defining  a kind of operator called a macro. Mastering
+macros is one of  the most important steps in moving  from writing correct Lisp
+programs to writing beautiful ones. One of  the aims of this book is to collect
+in one place all  that people have till now had to  learn from experience about
+macros.
+
+*** Why Lisp Is Different
+
+One of the purposes  of this book is to explain what  makes Lisp different from
+other languages. On Lisp deals mostly with the kinds of programs you could only
+write in  Lisp. Extensibility, bottom-up programming,  interactive development,
+source  code transformation,  embedded languages—this  is where  Lisp shows  to
+advantage.
+
+So when I say  that this book is about how to do  things that are impossible in
+other languages,  I don’t mean “impossible”  in the mathematical sense,  but in
+the sense that matters for programming languages.  That is, if you had to write
+some of the  programs in this book in C,  you might as well do it  by writing a
+Lisp compiler in C first.
+
+** Plan of the Book
+
+- Functions
+
+  Since functions  are the foundation  of Lisp  programs, the book  begins with
+  several chapters on functions.
+
+  - Chapter 2 explains what Lisp functions are and the possibilities they offer.
+
+  - Chapter  3 then  discusses the  advantages of  functional programming,  the
+    dominant style in Lisp programs.
+
+  - Chapter 4 shows how to use functions to extend Lisp.
+
+  - Chapter  5 suggests  the  new  kinds of  abstractions  we  can define  with
+    functions that return other functions.
+
+  - Chapter  6  shows  how  to  use functions  in  place  of  traditional  data
+    structures.
+
+- Macros
+
+  The  remainder of  the book  deals more  with macros  than functions.  Macros
+  receive more  attention partly because there  is more to say  about them, and
+  partly because they have not till now been adequately described in print.
+
+  - Chapters 7–10
+
+    form a complete tutorial on macro technique. By the end of it you will know
+    most of  what an experienced Lisp  programmer knows about macros:  how they
+    work; how to define, test, and debug them; when to use macros and when not;
+    the  major types  of macros;  how to  write programs  which generate  macro
+    expansions; how macro style differs from  Lisp style in general; and how to
+    detect and cure each of the unique problems that afflict macros.
+
+  - Chapters 11–18
+
+    show some of the powerful abstrac- tions you can build with macros.
+
+    - Chapter  11 shows  how to  write  the classic  macros—those which  create
+      context, or implement loops or conditionals.
+
+    - Chapter  12 explains  the role  of  macros in  operations on  generalized
+      variables.
+
+    - Chapter 13  shows how  macros can  make programs  run faster  by shifting
+      computation  to  compile-time.Chap- ter  13  shows  how macros  can  make
+      programs run faster by shifting computation to compile-time.
+
+    - Chapter 14 introduces  anaphoric macros, which allow you  to use pronouns
+      in your programs.
+
+    - Chapter 15  shows how macros provide  a more convenient interface  to the
+      function-builders defined in Chapter 5.
+
+    - Chapter 16 shows how to use macro-defining macros to make Lisp write your
+      programs for you.
+
+    - Chapter 17 discusses read-macros.
+
+    - Chapter 18, macros for destructuring.
+
+- Embedded Languages
+
+  With  Chapter 19  begins the  fourth part  of the  book, devoted  to embedded
+  languages.
+
+  - Chapter 19 introduces the subject by showing the same program, a program to
+    answer queries on a database, implemented  first by an interpreter and then
+    as a true embedded language.
+
+  - Chapter 20 shows how to introduce into Common Lisp programs the notion of a
+    continuation,  an  object  representing  the remainder  of  a  computation.
+    Continuations are a  very powerful tool, and can be  used to implement both
+    multiple processes and nondeterministic choice.
+
+  - Chapters 21 and 22: Embedding these control structures in Lisp
+
+  - Chapters  23  and  24  present  two  embedded  languages  which  show  that
+    nondeterminism  lives up  to  its promise:  a complete  ATN  parser and  an
+    embedded Prolog which combined total about 200 lines of code.
+
+    These programs are not short because they depend on programming tricks, but
+    because they’re written using Lisp the way it’s meant to be used. The point
+    of Chapters 23 and  24 is not how to implement ATNs in  one page of code or
+    Prolog  in two,  but to  show that  these programs,  when given  their most
+    natural Lisp implementation, simply are  that short. The embedded languages
+    in the latter chapters  provide a proof by example of  the twin points with
+    which I  began: that Lisp is  a natural language for  bottom-up design, and
+    that bottom-up design is a natural way to use Lisp.
+
+- Object-Oriented Programming
+
+  The  book concludes  with a  discussion of  object-oriented programming,  and
+  particularly CLOS, the  Common Lisp Object System. By saving  this topic till
+  last, we see more clearly the  way in which object-oriented programming is an
+  extension  of  ideas  already  present  in  Lisp.  It  is  one  of  the  many
+  abstractions that can be built on Lisp.
+
+- Notes and Appendix
+
+  A chapter’s worth of notes begins  on page 387. The notes contain references,
+  additional  or alternative  code,  or  descriptions of  aspects  of Lisp  not
+  directly related to the point at hand.  Notes are indicated by a small circle
+  in the outside margin.  There is also an Appendix (page 381) on packages.
+
+
+
+* The Extensible Language
+
+  #+cindex:AI
+  #+cindex:artificial intelligence
+#+texinfo: @heading Is Lisp AI?
+Not long ago, if  you asked what Lisp was for, many  people would have answered
+“for artificial intelligence.” In fact, the  association between Lisp and AI is
+just an accident of history.
+
+#+cindex:McCarthy, John
+Lisp was  invented by  John McCarthy,  who also  invented the  term “artificial
+intelligence.” His students and colleagues wrote their programs in Lisp, and so
+it began to be spoken of as an AI language. This line was taken up and repeated
+so  often during  the brief  AI boom  in  the 1980s  that it  became almost  an
+institution.
+
+Word has begun to spread that AI is not what Lisp is all about. Recent advances
+in hardware and software have made Lisp commercially viable: it is now used in
+
+- Gnu Emacs
+- Autocad
+- Interleaf
+
+
+#+texinfo: @heading What is Lisp Best At?
+If Lisp is not  the language of AI, what is it? Instead  of judging Lisp by the
+company it keeps,  let’s look at the  language itself. What can you  do in Lisp
+that you can’t do in other languages?
+
+One of the most distinctive qualities of Lisp  is the way it can be tailored to
+suit the program being  written in it.
+
+- Lisp itself is a  Lisp program, and
+- Lisp programs can be  expressed as lists, which are Lisp  data structures.
+
+
+Together, these  two principles mean that  *any user can add  operators to Lisp
+which are indistinguishable from the ones that come built-in*.
+
+** Design by Evolution
+Because Lisp gives you  the freedom to define your own  operators, you can mold
+it into just the language you need.
+
+- If  you’re writing  a text-editor,  you  can turn  Lisp into  a language  for
+  writing text-editors.
+- If  you’re writing  a CAD  program, you  can turn  Lisp into  a language  for
+  writing CAD programs.
+- And if you’re not  sure yet what kind of program you’re  writing, it’s a safe
+  bet to write it in Lisp. Whatever kind of program yours turns out to be, Lisp
+  will, during the writing of it, have evolved into a language for writing that
+  kind of program.
+
+
+
+#+texinfo: @heading The Failure of the Plan-and-Implement Model
+
+/If you’re not sure yet what kind of program you’re writing?/ To some ears that
+sentence has an odd ring to it. It  is in jarring contrast with a certain model
+of doing  things wherein you
+- (1) carefully plan what  you’re going to  do, and then
+- (2) do  it.
+
+
+According to this  model, if Lisp encourages you to  start writing your program
+before you’ve decided how it should work, it merely encourages sloppy thinking.
+
+Well, it just ain’t so. The plan-and-implement  method may have been a good way
+of building dams or launching invasions, but  experience has not shown it to be
+as good a way of writing programs.  Why?
+
+- Perhaps it’s because computers are so exacting.
+- Perhaps there is  more variation between programs than there  is between dams
+  or invasions.
+- Or perhaps the old methods don’t work because old concepts of redundancy have
+  no analogue in software development: if a dam contains 30% too much concrete,
+  that’s a margin for  error, but if a program does 30% too  much work, that is
+  an error.
+
+
+It may  be difficult to say  why the old method  fails, but that it  does fail,
+anyone can  see. When  is software delivered  on time?  Experienced programmers
+know that  no matter how carefully  you plan a  program, when you write  it the
+plans will turn  out to be imperfect  in some way. Sometimes the  plans will be
+hopelessly wrong.
+
+Yet few  of the  victims of  the plan-and-implement  method question  its basic
+soundness. Instead they  blame human failings: if only the  plans had been made
+with more foresight,  all this trouble could have been  avoided. Since even the
+very  best programmers  run into  problems  when they  turn to  implementation,
+perhaps it’s too much  to hope that people will ever  have that much foresight.
+Perhaps the plan-and-implement  method could be replaced  with another approach
+which better suits our limitations.
+
+
+#+texinfo: @heading A New Style of Programming---Planning as you Program
+We can approach programming in a different way, if we have the right tools. Why
+do we plan before implementing? The big danger in plunging right into a project
+is the possibility that we will paint ourselves into a corner. If we had a more
+flexible  language,  could this  worry  be  lessened? We  do,  and  it is.  The
+flexibility of Lisp has spawned a whole new style of programming.
+
+In Lisp, you can do much of your planning as you write the program.
+
+Why wait for  hindsight? As Montaigne found, nothing clarifies  your ideas like
+trying to write them  down. Once you’re freed from the  worry that you’ll paint
+yourself into a corner, you can take full advantage of this possibility.
+
+The ability to plan programs as you write them has two momentous consequences:
+
+1. programs  take less time to  write, because when  you plan and write  at the
+   same time, youhave a real program to focus your attention; and
+2.  they turn  out better,  because the  final design  is always  a product  of
+   evolution.
+
+
+#+texinfo: @subheading A Necessary Discipline
+So long as you maintain a certain discipline while searching for your program’s
+destiny---so long  as you always rewrite  mistaken parts as soon  as it becomes
+clear that they’re mistaken---the final product  will be a program more elegant
+than if you had spent weeks planning it beforehand.
+
+Lisp’s  versatility makes  this kind  of programming  a practical  alternative.
+Indeed, the greatest danger of Lisp is  that it may spoil you. Once you’ve used
+Lisp for a while,  you may become so sensitive to the  fit between language and
+application  that you  won’t be  able to  go back  to another  language without
+always feeling that it doesn’t give you quite the flexibility you need.
+
+** Programming Bottom-Up
+** Extensible Software
+** Extending Lisp
+** Why Lisp (or When)
+* Functions
+* Functional Programming
+* Utility Functions
+* Returning Functions
+* Functions as Representation
+* Macros
+* When to Use Macros
+* Variable Capture
+* Other Macro Pitfalls
+* Classic Macros
+* Computation at Compile Time
+* Anaphoric Macros
+* Macros Returning Functions
+* Macro-Defining Macros
+* Read-Macros
+* Destructuring
+* A Query Compiler
+* Continuations
+* Multiple Processes
+* Nondeterminism
+* Parsing with ATNs
+* Prolog
+* Object-Oriented Lisp
 
 * Build Tools
 :PROPERTIES:
