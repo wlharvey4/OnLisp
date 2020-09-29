@@ -3,8 +3,8 @@
 #+title:On Lisp by Paul Graham
 #+subtitle:{{{version}}} {{{date}}}
 #+author:LOLH
-#+date:2020-09-24 09:17
-#+macro:version Version 0.0.2
+#+date:2020-09-28 21:51
+#+macro:version Version 0.0.3
 #+macro:upload-date (eval (current-time-string))
 #+bucket:pinecone-forest.com
 
@@ -361,7 +361,7 @@ always feeling that it doesn’t give you quite the flexibility you need.
 :PROPERTIES:
 :appendix: t
 :custom_id: build-tools
-:org-template-version: 0.6.20
+:org-template-version: 0.6.23
 :END:
 ** Makefile					:dependencies:env_vars:perl:
 :PROPERTIES:
@@ -379,7 +379,7 @@ always feeling that it doesn’t give you quite the flexibility you need.
 :env_var2: GITHUB_TOKEN: holds the GitHub personal access token
 :env_var3: EDITOR: must hold a reference to a working emacsclient server
 :env_var4: COLORS
-:org-template-version: 0.6.20
+:org-template-version: 0.6.23
 :END:
 
 #+name:Makefile
@@ -587,7 +587,8 @@ always feeling that it doesn’t give you quite the flexibility you need.
   ### TEXINFO
   TEXI	:= $(PROJ).texi
   INFO	:= $(DIR).info
-  PDF		:= $(PROJ).pdf
+  INFOTN	:= $(shell $(EDITOR) --eval "(file-truename \"$(INFO)\")")
+  PDF	:= $(PROJ).pdf
   INDEX	:= index.html
   HTML	:= $(DIR)/$(INDEX)
   DIR_OLD	:= $(DIR)-old
@@ -617,17 +618,20 @@ always feeling that it doesn’t give you quite the flexibility you need.
   values: check
 	    @printf "$${BLUE}Values...$${CLEAR}\n"
 	    @echo TEMPLATE:	$(TEMPLATE)
-	    @echo EDITOR:		$(EDITOR)
+	    @echo EDITOR:	$(EDITOR)
 	    @echo USER:		$(USER)
 	    @echo PWD:		$(PWD)
 	    @echo ORG:		$(ORG)
+	    @echo TEXI:		$(TEXI)
+	    @echo INFO:		$(INFO)
+	    @ECHO INFOTN:	$(INFOTN)
+	    @echo BUCKET:	$(BUCKET)
 	    @echo PROJ:		$(PROJ) $S
-	    @echo BUCKET:		$(BUCKET)
 	    @echo S3_BUCKET:	$(S3_BUCKET)
 	    @echo HTTPS_BUCKET:	$(HTTPS_BUCKET)
 	    @echo VERS:		$(VERS)
-	    @echo S3PROJ:		$(S3PROJ)
-	    @echo S3VERS:		$(S3VERS)
+	    @echo S3PROJ:	$(S3PROJ)
+	    @echo S3VERS:	$(S3VERS)
 	    @echo DIR:		$(DIR)
 	    @echo DIR_OLD:	$(DIR_OLD)
 	    @echo SRC:		$(SRC)
@@ -688,10 +692,12 @@ always feeling that it doesn’t give you quite the flexibility you need.
 
   open-info: info
 	   @$(EDITOR) -u -eval \
-		  "(when (get-buffer \"*info*\") \
+		  "(if (get-buffer \"*info*\") \
 			  (with-current-buffer (get-buffer \"*info*\") \
-				  (revert-buffer t t t)))"
-	   @$(EDITOR) -n $(INFO)
+				(when (not (string= \"(symbol-value (quote Info-current-file))\" \"$(INFOTN)\")) \
+					(info \"$(INFOTN)\")) \
+				(revert-buffer t t t)) \
+		      (info \"$(INFOTN)\"))"
 
   html: $(HTML)
   $(HTML): $(TEXI)
@@ -789,7 +795,7 @@ always feeling that it doesn’t give you quite the flexibility you need.
 
   clean:
 	  @echo Cleaning...
-	    -@rm *~
+	    -@rm *~ 2>/dev/null
 	    -@for file in *.??*; \
 	    do \
 		    ext=$${file#$(PROJ).}; \
@@ -798,14 +804,14 @@ always feeling that it doesn’t give you quite the flexibility you need.
 
   dist-clean: clean
 	  @echo Dist Cleaning...
-	    ${EDITOR} --eval \
+	    @${EDITOR} -u --eval \
 	      "(kill-buffer \"$(ORG)\")"
 	    -@rm -rf *.{texi*,info*,html*,pdf*} $(DIR) $(TOOLS)
 	    -@for dir in *; \
-	    do \
+	    	do \
 		    [ -d $$dir -a $$dir != "$(DIR_OLD)" -a $$dir != $(SAVE) ] && \
 		    rm -vr $$dir; \
-	    done
+	    	done
 
   wipe-clean: dist-clean
 	  @echo Wipe Clean...
